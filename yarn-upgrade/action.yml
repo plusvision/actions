@@ -1,0 +1,34 @@
+name: yarn upgrade
+description: Upgrade yarn package by ci-yarn-upgrade
+
+inputs:
+
+  github-token:
+    description: GitHub token
+    required: true
+
+  github-user-name:
+    description: Commit author name, Defaults to github-actions
+    required: false
+    default: github-actions
+
+  github-user-email:
+    description: Commit author email, Defaults to github-actions@users.noreply.github.com
+    required: false
+    default: github-actions@users.noreply.github.com
+
+runs:
+
+  using: composite
+  steps:
+    - name: Install ci-yarn-upgrade
+      run: sudo yarn global add ci-yarn-upgrade
+      shell: bash
+
+    - name: Run ci-yarn-upgrade
+      env:
+        GITHUB_ACCESS_TOKEN: ${{ inputs.github-token }}
+        GIT_USER_NAME: ${{ inputs.github-user-name }}
+        GIT_USER_EMAIL: ${{ inputs.github-user-email }}
+      run: ci-yarn-upgrade --execute --latest --keep
+      shell: bash
