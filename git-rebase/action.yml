@@ -1,0 +1,40 @@
+name: git-rebase
+description: Use git rebase origin/"base branch"
+
+inputs:
+
+  github-user-name:
+    description: Commit author name, Defaults to github-actions
+    required: false
+    default: github-actions
+
+  github-user-email:
+    description: Commit author email, Defaults to github-actions@github.com
+    required: false
+    default: github-actions@github.com
+
+runs:
+
+  using: composite
+  steps:
+    - name: Get branch name
+      run: |
+        pr=$(curl -X GET -H "authorization: Bearer ${{ github.token }}" \
+                https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }})
+        echo "::set-output name=head_ref::$(echo "$pr" | jq -r .head.ref)"
+        echo "::set-output name=base_ref::$(echo "$pr" | jq -r .base.ref)"
+      id: get-branch-name
+      shell: bash
+
+    - name: Use git rebase
+      run: |
+        git config user.name ${{ inputs.github-user-name }}
+        git config user.email ${{ inputs.github-user-email }}
+
+        git fetch
+
+        git checkout -b ${{ steps.get-branch-name.outputs.head_ref }} origin/${{ steps.get-branch-name.outputs.head_ref }}
+        git rebase origin/${{ steps.get-branch-name.outputs.base_ref }}
+
+        git push -f
+      shell: bash
