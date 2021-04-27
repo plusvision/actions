@@ -1,0 +1,53 @@
+name: release-please
+description: Automate releases by git-pr-release
+
+inputs:
+
+  merge-from-branch:
+    description: Merge from branch, Defaults to develop
+    required: false
+    default: develop
+
+  merge-to-branch:
+    description: Merge to branch, Defaults to main
+    required: false
+    default: main
+
+  pr-template:
+    description: Pull request title and body template, Defaults to the content below is used
+    required: false
+    default: |
+      Release by @${{ github.actor }}
+
+      ## Pull requests
+
+      <% pull_requests.each do |pr| -%>
+      <%=  pr.to_checklist_item %>
+      <% end -%>
+
+  pr-labels:
+    description: 'Labels list for pull request (comma-separated string), Defaults to ":octocat: release-please"'
+    required: false
+    default: ":octocat: release-please"
+
+runs:
+
+  using: composite
+  steps:
+    - name: Install git-pr-release gem
+      run: sudo gem install git-pr-release
+      shell: bash
+
+    - name: Create template.erb
+      run: echo -e "${{ inputs.pr-template }}" > template.erb
+      shell: bash
+
+    - name: Run git-pr-release
+      env:
+        GIT_PR_RELEASE_TOKEN: ${{ github.token }}
+        GIT_PR_RELEASE_BRANCH_PRODUCTION: ${{ inputs.merge-to-branch }}
+        GIT_PR_RELEASE_BRANCH_STAGING: ${{ inputs.merge-from-branch }}
+        GIT_PR_RELEASE_TEMPLATE: template.erb
+        GIT_PR_RELEASE_LABELS: ${{ inputs.pr-labels }}
+      run: git-pr-release --no_fetch
+      shell: bash
