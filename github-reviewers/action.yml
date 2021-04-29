@@ -1,0 +1,52 @@
+name: github-reviewers
+description: Send slack message when assigned pull request reviewers
+
+inputs:
+
+  slack-webhook-url:
+    description: Slack Webhook URL
+    required: true
+
+  message-color:
+    description: Slack message attachments color, Defaults to "#000000"
+    required: false
+    default: "#000000"
+
+runs:
+
+  using: composite
+  steps:
+    - name: Get reviewers
+      env:
+        REVIEWERS: ${{ join(github.event.pull_request.requested_reviewers.*.login, ',') }}
+      run: |
+        reviewers=$(ruby -e '
+          puts ENV["REVIEWERS"].split(",").map {|reviewer| "<@#{reviewer}>" }.join(" ")
+        ')
+        echo "::set-output name=reviewers::${reviewers}"
+      id: get-reviewers
+      shell: bash
+
+    - name: Get unixtime
+      run: echo "::set-output name=unixtime::$(date +%s)"
+      id: get-unixtime
+      shell: bash
+
+    - name: Send message
+      env:
+        MESSAGE: |
+          {
+            "attachments": [{
+              "title": "#${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}",
+              "title_link": "${{ github.event.pull_request.html_url }}",
+              "fields": [
+                { "title": "Assigned Reviewers", "value": "${{ steps.get-reviewers.outputs.reviewers }}", "short": false }
+              ],
+              "footer": "<${{ github.event.repository.html_url }}|${{ github.repository }}>",
+              "footer_icon": "https://slack.github.com/static/img/favicon-neutral.png",
+              "ts": ${{ steps.get-unixtime.outputs.unixtime }},
+              "color": "${{ inputs.message-color }}"
+            }]
+          }
+      run: echo ${MESSAGE} | curl -X POST ${{ inputs.slack-webhook-url }} -d @-
+      shell: bash
