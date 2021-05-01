@@ -20,10 +20,10 @@ runs:
       env:
         REVIEWERS: ${{ join(github.event.pull_request.requested_reviewers.*.login, ',') }}
       run: |
-        reviewers=$(ruby -e '
-          puts ENV["REVIEWERS"].split(",").map {|reviewer| "<@#{reviewer}>" }.join(" ")
-        ')
-        echo "::set-output name=reviewers::${reviewers}"
+        ruby -e '
+          reviewers = ENV["REVIEWERS"].split(",").map {|reviewer| "<@#{reviewer}>" }.join(" ")
+          puts "::set-output name=reviewers::#{reviewers}"
+        '
       id: get-reviewers
       shell: bash
 
