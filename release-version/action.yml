@@ -1,0 +1,41 @@
+name: release-version
+description: Run git push .version by input version
+
+inputs:
+
+  github-user-name:
+    description: Commit author name, Defaults to github-actions
+    required: false
+    default: github-actions
+
+  github-user-email:
+    description: Commit author email, Defaults to github-actions@github.com
+    required: false
+    default: github-actions@github.com
+
+runs:
+
+  using: composite
+  steps:
+    - name: Bump version
+      run: |
+        ruby -r fileutils -e '
+          new_version = "${{ github.event.comment.body }}".gsub("@github version ", "").strip
+          FileUtils.touch ".version"
+          File.write(".version", "#{new_version}\n")
+
+          puts "::set-output name=new_version::#{new_version}"
+        '
+      id: bump-version
+      shell: bash
+
+    - name: Run git push
+      run: |
+        git config user.name ${{ inputs.github-user-name }}
+        git config user.email ${{ inputs.github-user-email }}
+
+        git add .version
+        git commit -m ":tada: Release ${{ steps.bump-version.outputs.new_version }}"
+
+        git push
+      shell: bash
