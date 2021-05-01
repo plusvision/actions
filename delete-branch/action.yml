@@ -1,18 +1,12 @@
 name: delete branch
 description: Delete branch using REST API
 
-inputs:
-
-  github-token:
-    description: GitHub token
-    required: true
-
 runs:
 
   using: composite
   steps:
     - name: Delete branch
       run: |
-        curl -X DELETE -H 'authorization: Bearer ${{ inputs.github-token }}' \
+        curl -X DELETE -H 'authorization: Bearer ${{ github.token }}' \
           https://api.github.com/repos/${{ github.repository }}/git/refs/heads/${{ github.head_ref }}
       shell: bash
