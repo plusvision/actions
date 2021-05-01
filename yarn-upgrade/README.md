@@ -2,9 +2,8 @@
 
 ## Inputs
 
-1. `github-token` (required) : GitHub token
-2. `github-user-name` (optional) : Commit author name, Defaults to github-actions
-3. `github-user-email` (optional) : Commit author email, Defaults to github-actions@users.noreply.github.com
+1. `github-user-name` (optional) : Commit author name, Defaults to github-actions
+2. `github-user-email` (optional) : Commit author email, Defaults to github-actions@users.noreply.github.com
 
 ## Outputs
 
@@ -16,10 +15,7 @@ Return none.
 steps:
   - uses: actions/checkout@v2
   - uses: actions/setup-node@v2
-    with:
-      node-version: 14
+    with: { node-version: 14 }
 
   - uses: plusvision/actions/yarn-upgrade@main
-    with:
-      github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
