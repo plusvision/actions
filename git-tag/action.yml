@@ -1,0 +1,39 @@
+name: git-tag
+description: Automate git tag from .version
+
+inputs:
+
+  github-user-name:
+    description: Commit author name, Defaults to github-actions
+    required: false
+    default: github-actions
+
+  github-user-email:
+    description: Commit author email, Defaults to github-actions@github.com
+    required: false
+    default: github-actions@github.com
+
+runs:
+
+  using: composite
+  steps:
+    - name: Valid .version
+      run: |
+        if [[ ! -e .version ]]; then
+          echo "Not found .version"
+          exit 1
+        fi
+        if [[ $(git tag -l $(cat .version)) ]]; then
+          echo ".version tag is already exists"
+          exit 1
+        fi
+      shell: bash
+
+    - name: Run git tag
+      run: |
+        git config user.name ${{ inputs.github-user-name }}
+        git config user.email ${{ inputs.github-user-email }}
+
+        git tag -a $(cat .version) -m "Version $(cat .version)"
+        git push origin $(cat .version)
+      shell: bash
