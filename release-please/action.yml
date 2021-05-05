@@ -39,7 +39,7 @@ runs:
       shell: bash
 
     - name: Create template.erb
-      run: echo -e "${{ inputs.pr-template }}" > template.erb
+      run: echo -e '${{ inputs.pr-template }}' > template.erb
       shell: bash
 
     - name: Run git-pr-release
