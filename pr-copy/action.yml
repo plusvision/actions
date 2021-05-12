@@ -1,0 +1,39 @@
+name: pr-copy
+description: Automate copy pull request by pr-bullet
+
+inputs:
+
+  github-token:
+    description: GitHub Personal Access Token
+    required: true
+
+  pr-bullet-version:
+    description: pr-bullet version
+    required: false
+    default: 0.2.1
+
+runs:
+
+  using: composite
+  steps:
+    - name: Install pr-bullet
+      env:
+        PR_BULLET_VERSION: ${{ inputs.pr-bullet-version }}
+      run: curl -L https://git.io/dpkg-i-from-url | bash -s -- https://github.com/k1LoW/pr-bullet/releases/download/v$PR_BULLET_VERSION/pr-bullet_$PR_BULLET_VERSION-1_amd64.deb
+      shell: bash
+
+    - name: Target repository
+      run: |
+        ruby -e '
+          repositories = "${{ github.event.comment.body }}".gsub("@github copy ", "").strip
+          # カンマ区切りをスペース区切りに変換
+          puts "::set-output name=repositories::#{repositories.gsub(",", " ")}"
+        '
+      id: target-repository
+      shell: bash
+
+    - name: Run pr-bullet
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: pr-bullet --yes ${{ github.event.issue.pull_request.html_url }} ${{ steps.target-repository.outputs.repositories }}
+      shell: bash
