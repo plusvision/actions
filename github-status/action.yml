@@ -1,0 +1,40 @@
+name: github-status
+description: Create github statuses
+
+inputs:
+
+  commit-sha:
+    description: Git commit SHA
+    required: true
+
+  state:
+    description: Status, select of `failure`, `pending` or `success`
+    required: true
+
+  label:
+    description: Label of status, Defaults to `workflow / job (event)`
+    required: false
+    default: "${{ github.workflow }} / ${{ github.job }} (${{ github.event_name }})"
+
+  target-url:
+    description: URL of status, Defaults to Actions URL
+    required: false
+    default: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+runs:
+
+  using: composite
+  steps:
+    - name: Create github statuses
+      env:
+        PARAMS: |
+          {
+            "state": "${{ inputs.state }}",
+            "context": "${{ inputs.label }}",
+            "target_url": "${{ inputs.target-url }}"
+          }
+      run: |
+        curl -X POST -H "authorization: Bearer ${{ github.token }}" \
+          -d "${PARAMS}" \
+          https://api.github.com/repos/${{ github.repository }}/statuses/${{ inputs.commit-sha }}
+      shell: bash
