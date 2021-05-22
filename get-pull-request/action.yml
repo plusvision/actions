@@ -32,6 +32,6 @@ runs:
 
         echo "::set-output name=head_ref::$(echo "$res" | jq -r .head.ref)"
         echo "::set-output name=base_ref::$(echo "$res" | jq -r .base.ref)"
-        echo "::set-output name=response::${res}"
+        echo "::set-output name=response::$(echo "$res" | tr -d '\n')"
       id: get-pull-request
       shell: bash
