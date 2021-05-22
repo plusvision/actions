@@ -17,5 +17,5 @@ steps:
   - uses: actions/checkout@v2
     with: { fetch-depth: 0 }
 
-  - uses: plusvision/actions/git-rebase@main
+  - uses: plusvision/actions/git-rebase@v1
 ```

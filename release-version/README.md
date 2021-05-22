@@ -17,5 +17,5 @@ steps:
   - uses: actions/checkout@v2
     with: { ref: "barnch" }
 
-  - uses: plusvision/actions/release-version@main
+  - uses: plusvision/actions/release-version@v1
 ```

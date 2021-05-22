@@ -14,7 +14,7 @@
 
 ```yaml
 steps:
-  - uses: plusvision/actions/get-pull-request@main
+  - uses: plusvision/actions/get-pull-request@v1
     with:
       pull-number: 1
     id: get-pull-request

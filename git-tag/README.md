@@ -16,5 +16,5 @@ steps:
   - uses: actions/checkout@v2
     with: { ref: "branch", fetch-depth: 0 }
 
-  - uses: plusvision/actions/git-tag@main
+  - uses: plusvision/actions/git-tag@v1
 ```

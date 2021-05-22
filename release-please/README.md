@@ -27,5 +27,5 @@ steps:
   - uses: actions/checkout@v2
     with: { fetch-depth: 0 }
 
-  - uses: plusvision/actions/release-please@main
+  - uses: plusvision/actions/release-please@v1
 ```

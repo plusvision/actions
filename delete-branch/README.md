@@ -13,5 +13,5 @@ Return none.
 ```yaml
 if: github.event.pull_request.merged && !contains('main,etc', github.head_ref)
 steps:
-  - uses: plusvision/actions/delete-branch@main
+  - uses: plusvision/actions/delete-branch@v1
 ```

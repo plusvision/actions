@@ -13,7 +13,7 @@ Return none.
 
 ```yaml
 steps:
-  - uses: plusvision/actions/github-reviewers@main
+  - uses: plusvision/actions/github-reviewers@v1
     with:
       slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 ```

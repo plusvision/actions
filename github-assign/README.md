@@ -12,5 +12,5 @@ Return none.
 
 ```yaml
 steps:
-  - uses: plusvision/actions/github-assign@main
+  - uses: plusvision/actions/github-assign@v1
 ```

@@ -17,5 +17,5 @@ steps:
   - uses: actions/setup-node@v2
     with: { node-version: 14 }
 
-  - uses: plusvision/actions/yarn-upgrade@main
+  - uses: plusvision/actions/yarn-upgrade@v1
 ```
