@@ -17,19 +17,46 @@ runs:
   using: composite
   steps:
     - name: Get reviewers
-      env:
-        REVIEWERS: ${{ join(github.event.pull_request.requested_reviewers.*.login, ',') }}
       run: |
-        ruby -e '
-          reviewers = ENV["REVIEWERS"].split(",").map {|reviewer| "<@#{reviewer}>" }.join(" ")
-          puts "::set-output name=reviewers::#{reviewers}"
+        ruby -r json -r time -e '
+          # ページ情報取得
+          header = `curl -I -H "authorization: Bearer ${{ github.token }}" \
+                      -H "Accept: application/vnd.github.mockingbird-preview+json" \
+                      "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/timeline"`
+
+          # 最新のイベントを取得するために最終ページを見つける
+          link_str = header.split("\r\n").each.with_index do |str, i|
+                      key, value = str.split(": ")
+                      if key == "link"
+                        break value
+                      elsif i == header.split("\r\n").size - 1
+                        break nil
+                      end
+                    end
+
+          # イベント情報取得
+          timeline_url = link_str ? link_str.match(/ <(.+?)>; rel=\"last\"/)[1] : "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/timeline"
+          events = `curl -H "authorization: Bearer ${{ github.token }}" \
+                      -H "Accept: application/vnd.github.mockingbird-preview+json" \
+                      "#{timeline_url}"`
+
+          # イベント履歴からレビュア設定したユーザ名を取得
+          event_at = "${{ github.event.pull_request.updated_at }}"
+          reviewers = JSON.parse(events).group_by {|event| event["created_at"] }[event_at].each.with_object([]) do |event, reviewers|
+                        next unless event["event"] == "review_requested"
+                        reviewers << event["requested_reviewer"]["login"]
+                      end
+
+          # レビュア人数分のActionsジョブが実行されるので重複排除
+          if reviewers[0] == "${{ github.event.requested_reviewer.login }}"
+            puts "::set-output name=reviewers::#{reviewers.map {|reviewer| "<@#{reviewer}>" }.join(" ")}"
+            puts "::set-output name=event_time::#{Time.parse(event_at).to_i}"
+            puts "::set-output name=is_send::true"
+          else
+            puts "::set-output name=is_send::false"
+          end
         '
       id: get-reviewers
-      shell: bash
-
-    - name: Get unixtime
-      run: echo "::set-output name=unixtime::$(date +%s)"
-      id: get-unixtime
       shell: bash
 
     - name: Send message
@@ -44,9 +71,12 @@ runs:
               ],
               "footer": "<${{ github.event.repository.html_url }}|${{ github.repository }}>",
               "footer_icon": "https://slack.github.com/static/img/favicon-neutral.png",
-              "ts": ${{ steps.get-unixtime.outputs.unixtime }},
+              "ts": ${{ steps.get-reviewers.outputs.event_time }},
               "color": "${{ inputs.message-color }}"
             }]
           }
-      run: echo ${MESSAGE} | curl -X POST ${{ inputs.slack-webhook-url }} -d @-
+      run: |
+        if "${{ steps.get-reviewers.outputs.is_send }}"; then
+          echo ${MESSAGE} | curl -X POST ${{ inputs.slack-webhook-url }} -d @-
+        fi
       shell: bash
