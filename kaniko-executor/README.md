@@ -4,6 +4,7 @@
 
 1. `aws-access-key-id` (required) : AWS_ACCESS_KEY_ID
 2. `aws-secret-access-key` (required) : AWS_SECRET_ACCESS_KEY
+2. `aws-session-token` (optional) : AWS_SESSION_TOKEN, Defaults to ""
 3. `images` (required) : Build image names ('name:tag,name:tag' format)
 4. `cache-repo` (required) : Pushing to docker repository for layer cache
 5. `target` (optional) : Docker build target directory, Defaults to $PWD
