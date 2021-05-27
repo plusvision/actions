@@ -11,6 +11,11 @@ inputs:
     description: AWS_SECRET_ACCESS_KEY
     required: true
 
+  aws-session-token:
+    description: AWS_SESSION_TOKEN, Defaults to ""
+    required: false
+    default: '""'
+
   images:
     description: Build image names ('name:tag,name:tag' format)
     required: true
@@ -51,6 +56,7 @@ runs:
         docker run --rm \
           -e AWS_ACCESS_KEY_ID=${{ inputs.aws-access-key-id }} \
           -e AWS_SECRET_ACCESS_KEY=${{ inputs.aws-secret-access-key }} \
+          -e AWS_SESSION_TOKEN=${{ inputs.aws-session-token }} \
           -v ${{ inputs.target }}:/workspace \
           -v /tmp/kaniko_config.json:/kaniko/.docker/config.json \
           gcr.io/kaniko-project/executor:latest \
