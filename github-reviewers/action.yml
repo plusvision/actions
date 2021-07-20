@@ -7,6 +7,11 @@ inputs:
     description: Slack Webhook URL
     required: true
 
+  message:
+    description: Slack message, Defaults to "レビューお願いします :pray:"
+    required: false
+    default: "レビューお願いします :pray:"
+
   message-color:
     description: Slack message attachments color, Defaults to "#000000"
     required: false
@@ -49,7 +54,7 @@ runs:
 
           # レビュア人数分のActionsジョブが実行されるので重複排除
           if reviewers[0] == "${{ github.event.requested_reviewer.login }}"
-            puts "::set-output name=reviewers::#{reviewers.map {|reviewer| "<@#{reviewer}>" }.join(" ")}"
+            puts "::set-output name=reviewers::#{reviewers.map {|reviewer| "@#{reviewer}" }.join(" ")}"
             puts "::set-output name=event_time::#{Time.parse(event_at).to_i}"
             puts "::set-output name=is_send::true"
           else
@@ -66,9 +71,7 @@ runs:
             "attachments": [{
               "title": "#${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}",
               "title_link": "${{ github.event.pull_request.html_url }}",
-              "fields": [
-                { "title": "Assigned Reviewers", "value": "${{ steps.get-reviewers.outputs.reviewers }}", "short": false }
-              ],
+              "text": "${{ steps.get-reviewers.outputs.reviewers }}\n${{ inputs.message }}",
               "footer": "<${{ github.event.repository.html_url }}|${{ github.repository }}>",
               "footer_icon": "https://slack.github.com/static/img/favicon-neutral.png",
               "ts": ${{ steps.get-reviewers.outputs.event_time }},

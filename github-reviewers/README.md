@@ -3,7 +3,8 @@
 ## Inputs
 
 1. `slack-webhook-url` (required) : Slack Webhook URL
-2. `message-color` (optional) : Slack message attachments color, Defaults to "#000000"
+2. `message` (optional) : Slack message, Defaults to "レビューお願いします :pray:"
+3. `message-color` (optional) : Slack message attachments color, Defaults to "#000000"
 
 ## Outputs
 
