@@ -26,5 +26,5 @@ runs:
         GITHUB_ACCESS_TOKEN: ${{ github.token }}
         GIT_USER_NAME: ${{ inputs.github-user-name }}
         GIT_USER_EMAIL: ${{ inputs.github-user-email }}
-      run: ci-yarn-upgrade --execute --latest --keep
+      run: ci-yarn-upgrade --execute --keep
       shell: bash
