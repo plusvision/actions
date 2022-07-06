@@ -1,0 +1,26 @@
+name: base-pull-request
+description: Add base pull request number in head pull request description
+
+inputs:
+
+  description-title:
+    description: PR description title
+    required: false
+    default: "Base PR"
+
+runs:
+
+  using: composite
+  steps:
+    - name: Add base PR number
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        number=$(gh pr list --repo ${{ github.repository }} --head ${{ github.base_ref }} --json number --jq '.[0].number')
+        if [[ ${number} != "" ]]; then
+          pr_body=$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json body --jq '.body')
+          body_template=$(echo -e "${pr_body}\n\n## ${{ inputs.description-title }}\n\n- #${number} by [${{ github.base_ref }}](https://github.com/${{ github.repository }}/tree/${{ github.base_ref }})")
+
+          gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "${body_template}"
+        fi
+      shell: bash
