@@ -1,0 +1,22 @@
+name: review-please
+description: Add label when assigned reviewers
+
+inputs:
+
+  add-labels:
+    description: 'Labels list for pull request (comma-separated string), Defaults to "review"'
+    required: false
+    default: "review"
+
+runs:
+
+  using: composite
+  steps:
+    - name: Add review labels
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh pr edit ${{ github.event.pull_request.number }} \
+          --repo ${{ github.repository }} \
+          --add-label "${{ inputs.add-labels }}"
+      shell: bash
