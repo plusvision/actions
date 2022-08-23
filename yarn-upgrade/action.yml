@@ -13,6 +13,11 @@ inputs:
     required: false
     default: github-actions@users.noreply.github.com
 
+  options:
+    description: CLI options, Defaults to blank
+    required: false
+    default: ""
+
 runs:
 
   using: composite
@@ -26,5 +31,5 @@ runs:
         GITHUB_ACCESS_TOKEN: ${{ github.token }}
         GIT_USER_NAME: ${{ inputs.github-user-name }}
         GIT_USER_EMAIL: ${{ inputs.github-user-email }}
-      run: ci-yarn-upgrade --execute --keep
+      run: ci-yarn-upgrade --execute --keep ${{ inputs.options }}
       shell: bash
