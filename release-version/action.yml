@@ -4,14 +4,14 @@ description: Run git push .version by input version
 inputs:
 
   github-user-name:
-    description: Commit author name, Defaults to github-actions
+    description: Commit author name, Defaults to github-actions[bot]
     required: false
-    default: github-actions
+    default: github-actions[bot]
 
   github-user-email:
-    description: Commit author email, Defaults to github-actions@github.com
+    description: Commit author email, Defaults to github-actions[bot]@users.noreply.github.com
     required: false
-    default: github-actions@github.com
+    default: github-actions[bot]@users.noreply.github.com
 
   commit-message:
     description: Commit message, Defaults to `🎉 Release ${NEW_VERSION}`
