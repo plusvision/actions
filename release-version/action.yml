@@ -1,5 +1,5 @@
 name: release-version
-description: Run git push .version by input version
+description: Run git push Versioning file by label
 
 inputs:
 
@@ -18,6 +18,11 @@ inputs:
     required: false
     default: ":tada: Release ${NEW_VERSION}"
 
+  version-file:
+    description: Versioning file, Defaults to `.version`
+    required: false
+    default: .version
+
 runs:
 
   using: composite
@@ -25,10 +30,22 @@ runs:
     - name: Bump version
       run: |
         ruby -r fileutils -e '
-          new_version = "${{ github.event.comment.body }}".gsub("@github version ", "").strip
-          FileUtils.touch ".version"
-          File.write(".version", "#{new_version}\n")
+          FileUtils.touch "${{ inputs.version-file }}"
 
+          current_version     = File.read("${{ inputs.version-file }}").strip
+          current_version     = "0.0.0" if current_version.empty?
+          major, minor, patch = current_version.split(".")
+
+          label       = "${{ github.event.label.name }}"
+          new_version = if label.include?("major")
+                          "#{major.succ}.0.0"
+                        elsif label.include?("minor")
+                          "#{major}.#{minor.succ}.0"
+                        elsif label.include?("patch")
+                          "#{major}.#{minor}.#{patch.succ}"
+                        end
+
+          File.write("${{ inputs.version-file }}", "#{new_version}\n")
           puts "::set-output name=new_version::#{new_version}"
         '
       id: bump-version
@@ -41,7 +58,7 @@ runs:
         git config user.name ${{ inputs.github-user-name }}
         git config user.email ${{ inputs.github-user-email }}
 
-        git add .version
+        git add ${{ inputs.version-file }}
         git commit -m "${{ inputs.commit-message }}"
 
         git push
