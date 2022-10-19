@@ -46,7 +46,7 @@ runs:
                         end
 
           File.write("${{ inputs.version-file }}", "#{new_version}\n")
-          puts "::set-output name=new_version::#{new_version}"
+          `echo "new_version=#{new_version}" >> $GITHUB_OUTPUT`
         '
       id: bump-version
       shell: bash

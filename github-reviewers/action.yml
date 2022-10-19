@@ -54,11 +54,11 @@ runs:
 
           # レビュア人数分のActionsジョブが実行されるので重複排除
           if reviewers[0] == "${{ github.event.requested_reviewer.login }}"
-            puts "::set-output name=reviewers::#{reviewers.map {|reviewer| "@#{reviewer}" }.join(" ")}"
-            puts "::set-output name=event_time::#{Time.parse(event_at).to_i}"
-            puts "::set-output name=is_send::true"
+            `echo "reviewers=#{reviewers.map {|reviewer| "@#{reviewer}" }.join(" ")}" >> $GITHUB_OUTPUT`
+            `echo "event_time=#{Time.parse(event_at).to_i}" >> $GITHUB_OUTPUT`
+            `echo "is_send=true" >> $GITHUB_OUTPUT`
           else
-            puts "::set-output name=is_send::false"
+            `echo "is_send=false" >> $GITHUB_OUTPUT`
           end
         '
       id: get-reviewers

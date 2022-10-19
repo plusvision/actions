@@ -30,8 +30,8 @@ runs:
         res=$(curl -X GET -H "authorization: Bearer ${{ github.token }}" \
                 https://api.github.com/repos/${{ github.repository }}/pulls/${{ inputs.pull-number }})
 
-        echo "::set-output name=head_ref::$(echo "$res" | jq -r .head.ref)"
-        echo "::set-output name=base_ref::$(echo "$res" | jq -r .base.ref)"
-        echo "::set-output name=response::$(echo "$res" | tr -d '\n')"
+        echo "head_ref=$(echo "$res" | jq -r .head.ref)" >> $GITHUB_OUTPUT
+        echo "base_ref=$(echo "$res" | jq -r .base.ref)" >> $GITHUB_OUTPUT
+        echo "response=$(echo "$res" | tr -d '\n')" >> $GITHUB_OUTPUT
       id: get-pull-request
       shell: bash

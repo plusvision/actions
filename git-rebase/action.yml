@@ -21,8 +21,8 @@ runs:
       run: |
         pr=$(curl -X GET -H "authorization: Bearer ${{ github.token }}" \
                 https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }})
-        echo "::set-output name=head_ref::$(echo "$pr" | jq -r .head.ref)"
-        echo "::set-output name=base_ref::$(echo "$pr" | jq -r .base.ref)"
+        echo "head_ref=$(echo "$res" | jq -r .head.ref)" >> $GITHUB_OUTPUT
+        echo "base_ref=$(echo "$res" | jq -r .base.ref)" >> $GITHUB_OUTPUT
       id: get-branch-name
       shell: bash
 
