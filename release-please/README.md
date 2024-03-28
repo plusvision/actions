@@ -1,5 +1,7 @@
 # release-please
 
+git-pr-release gemを使ってリリースPRを作成します。
+
 ## Inputs
 
 1. `merge-from-branch` (optional) : Merge from branch, Defaults to develop
@@ -23,9 +25,21 @@ Return none.
 ## Example
 
 ```yaml
-steps:
-  - uses: actions/checkout@v2
-    with: { fetch-depth: 0 }
+name: release-please
+on:
+  push:
+    branches: [develop]
 
-  - uses: plusvision/actions/release-please@v1
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: plusvision/actions/release-please@v2
+        with:
+          merge-from-branch: develop
+          merge-to-branch: master
 ```

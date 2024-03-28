@@ -1,5 +1,7 @@
 # github-assign
 
+Pull Requestの作成者をAssigneesに割り当てます。
+
 ## Inputs
 
 No inputs.
@@ -11,6 +13,14 @@ Return none.
 ## Example
 
 ```yaml
-steps:
-  - uses: plusvision/actions/github-assign@v1
+name: github-assign
+on:
+  pull_request: { types: [opened] }
+
+jobs:
+  github-assign:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: plusvision/actions/github-assign@v2
 ```
