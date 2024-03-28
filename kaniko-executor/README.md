@@ -1,5 +1,7 @@
 # kaniko-executor
 
+Dockerビルドのために`gcr.io/kaniko-project/executor`を実行します。
+
 ## Inputs
 
 1. `aws-access-key-id` (required) : AWS_ACCESS_KEY_ID
@@ -17,15 +19,21 @@ Return none.
 ## Example
 
 ```yaml
-steps:
-  - uses: actions/checkout@v2
-    with:
-      ref: ${{ github.base_ref }}
+name: docker-build
+on: push
 
-  - uses: plusvion/actions/kaniko-executor@v1
-    with:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      images: image:tag
-      cache-repo: docker-repository-for-cache
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    if: ${{ !contains('ci skip', github.event.head_commit.message) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: plusvion/actions/kaniko-executor@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          images: image-url:tag
+          cache-repo: cache-image-url
 ```

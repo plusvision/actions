@@ -1,5 +1,7 @@
 # git-tag
 
+`.version`ファイルからgitタグを自動作成します。
+
 ## Inputs
 
 1. `github-user-name` (optional) : Commit author name, Defaults to github-actions[bot]
@@ -12,9 +14,19 @@ Return none.
 ## Example
 
 ```yaml
-steps:
-  - uses: actions/checkout@v2
-    with: { ref: "branch", fetch-depth: 0 }
+name: git-tag
+on:
+  push:
+    branches:
+      - master
 
-  - uses: plusvision/actions/git-tag@v1
+jobs:
+  git-tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: master, fetch-depth: 0 }
+
+      - uses: plusvision/actions/git-tag@v2
 ```

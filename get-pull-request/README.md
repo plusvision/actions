@@ -1,5 +1,7 @@
 # get-pull-request
 
+PR番号からそのPull Requestの情報を返します。
+
 ## Inputs
 
 1. `pull-number` (required) : Pull request number
@@ -14,7 +16,7 @@
 
 ```yaml
 steps:
-  - uses: plusvision/actions/get-pull-request@v1
+  - uses: plusvision/actions/get-pull-request@v2
     with:
       pull-number: 1
     id: get-pull-request

@@ -1,5 +1,7 @@
 # release-version
 
+Pull Requestのラベルに基づいて`.version`ファイルを更新します。
+
 ## Inputs
 
 1. `github-user-name` (optional) : Commit author name, Defaults to github-actions[bot]
@@ -14,10 +16,22 @@ Return none.
 ## Example
 
 ```yaml
-if: ${{ contains(github.event.label.name, 'major') || contains(github.event.label.name, 'minor') || contains(github.event.label.name, 'patch') }}
-steps:
-  - uses: actions/checkout@v3
-    with: { ref: "barnch" }
+name: release-version
+on:
+  pull_request:
+    types: [labeled]
 
-  - uses: plusvision/actions/release-version@v2
+jobs:
+  release-version:
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.label.name, 'major') || contains(github.event.label.name, 'minor') || contains(github.event.label.name, 'patch') }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - uses: plusvision/actions/release-version@v2
+        with:
+          commit-message: ":tada: Release ${NEW_VERSION} [ci skip]"
 ```

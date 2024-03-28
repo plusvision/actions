@@ -1,5 +1,7 @@
 # git-rebase
 
+Pull Requestのコメントで任意のキーワードを入力すると、Pull Requestのベースブランチでrebase force pushします。
+
 ## Inputs
 
 1. `github-user-name` (optional) : Commit author name, Defaults to github-actions[bot]
@@ -12,10 +14,21 @@ Return none.
 ## Example
 
 ```yaml
-if: github.event.issue.pull_request && github.event.comment.body == '@github rebase'
-steps:
-  - uses: actions/checkout@v2
-    with: { fetch-depth: 0 }
+name: git-rebase
+on:
+  issue_comment:
+    types: [created]
 
-  - uses: plusvision/actions/git-rebase@v1
+jobs:
+  git-rebase:
+    runs-on: ubuntu-latest
+    if: github.event.issue.pull_request && github.event.comment.body == '@github rebase'
+
+    steps:
+      - uses: plusvision/actions/github-issue-comment-reaction@v2
+
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: plusvision/actions/git-rebase@v2
 ```

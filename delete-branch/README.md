@@ -1,5 +1,7 @@
 # delete-branch
 
+このブランチをターゲットにしたPull Requestがなければブランチを削除します。
+
 ## Inputs
 
 No inputs.
@@ -11,7 +13,16 @@ Return none.
 ## Example
 
 ```yaml
-if: github.event.pull_request.merged && !contains('main,etc', github.head_ref)
-steps:
-  - uses: plusvision/actions/delete-branch@v1
+name: delete-branch
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  delete-branch:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged && !contains('main,master,develop,deploy', github.head_ref)
+
+    steps:
+      - uses: plusvision/actions/delete-branch@v2
 ```

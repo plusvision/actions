@@ -1,5 +1,7 @@
 # github-reviewers
 
+Pull RequestのReviewersが割り当てられたら、Slackにメッセージ送信します。
+
 ## Inputs
 
 1. `slack-webhook-url` (required) : Slack Webhook URL
@@ -13,8 +15,16 @@ Return none.
 ## Example
 
 ```yaml
-steps:
-  - uses: plusvision/actions/github-reviewers@v1
-    with:
-      slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+name: github-reviewers
+on:
+  pull_request: { types: [review_requested] }
+
+jobs:
+  github-reviewers:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: plusvision/actions/github-reviewers@v2
+        with:
+          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 ```

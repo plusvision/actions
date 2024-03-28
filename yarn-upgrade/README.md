@@ -1,5 +1,7 @@
 # yarn-upgrade
 
+ci-yarn-upgradeを使ってyarnパッケージをアップグレードします。
+
 ## Inputs
 
 1. `github-user-name` (optional) : Commit author name, Defaults to github-actions[bot]
@@ -13,10 +15,23 @@ Return none.
 ## Example
 
 ```yaml
-steps:
-  - uses: actions/checkout@v2
-  - uses: actions/setup-node@v2
-    with: { node-version: 14 }
+name: yarn-update-pr
+on:
+  schedule:
+    - cron: "0 23 * * sun" # JST 08:00 (Mon)
 
-  - uses: plusvision/actions/yarn-upgrade@v1
+jobs:
+  yarn-update-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: develop
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - uses: plusvision/actions/yarn-upgrade@v2
 ```
