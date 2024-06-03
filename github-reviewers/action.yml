@@ -21,46 +21,35 @@ runs:
 
   using: composite
   steps:
-    - name: Get reviewers
+    - name: Set query value
       run: |
-        ruby -r json -r time -e '
-          # ページ情報取得
-          header = `curl -I -H "authorization: Bearer ${{ github.token }}" \
-                      -H "Accept: application/vnd.github.mockingbird-preview+json" \
-                      "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/timeline"`
+        # レビュアリクエストがあった時刻から10秒前の時刻を取得
+        from_datetime=$(ruby -rtime -e 'puts (Time.parse("${{ github.event.pull_request.updated_at }}") - 10).strftime("%FT%TZ")')
+        echo "from-datetime=${from_datetime}" >> $GITHUB_OUTPUT
+      id: query-value
+      shell: bash
 
-          # 最新のイベントを取得するために最終ページを見つける
-          link_str = header.split("\r\n").each.with_index do |str, i|
-                      key, value = str.split(": ")
-                      if key == "link"
-                        break value
-                      elsif i == header.split("\r\n").size - 1
-                        break nil
-                      end
-                    end
+    - name: Get reviewers
+      env:
+        GH_TOKEN: ${{ github.token }}
+        REQUEST_BODY: |
+          query {
+            node(id: "${{ github.event.pull_request.node_id }}") {
+              ... on PullRequest {
+                timelineItems(itemTypes: [REVIEW_REQUESTED_EVENT], since: "${{ steps.query-value.outputs.from-datetime }}", first: 100) {
+                  nodes { ... on ReviewRequestedEvent { requestedReviewer { ... on User { login } } } }
+                }
+              }
+            }
+          }
+      run: |
+        # レビュアにアサインされたユーザを取得
+        reviewers=($(gh api graphql -f query="${REQUEST_BODY}" | jq -r '.data.node.timelineItems.nodes[].requestedReviewer.login' | awk '{print "@"$0}'))
+        echo "reviewers=${reviewers[@]}" >> $GITHUB_OUTPUT
 
-          # イベント情報取得
-          timeline_url = link_str ? link_str.match(/ <(.+?)>; rel=\"last\"/)[1] : "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/timeline"
-          events = `curl -H "authorization: Bearer ${{ github.token }}" \
-                      -H "Accept: application/vnd.github.mockingbird-preview+json" \
-                      "#{timeline_url}"`
-
-          # イベント履歴からレビュア設定したユーザ名を取得
-          event_at = "${{ github.event.pull_request.updated_at }}"
-          reviewers = JSON.parse(events).group_by {|event| event["created_at"] }[event_at].each.with_object([]) do |event, reviewers|
-                        next unless event["event"] == "review_requested"
-                        reviewers << event["requested_reviewer"]["login"]
-                      end
-
-          # レビュア人数分のActionsジョブが実行されるので重複排除
-          if reviewers[0] == "${{ github.event.requested_reviewer.login }}"
-            `echo "reviewers=#{reviewers.map {|reviewer| "@#{reviewer}" }.join(" ")}" >> $GITHUB_OUTPUT`
-            `echo "event_time=#{Time.parse(event_at).to_i}" >> $GITHUB_OUTPUT`
-            `echo "is_send=true" >> $GITHUB_OUTPUT`
-          else
-            `echo "is_send=false" >> $GITHUB_OUTPUT`
-          end
-        '
+        # レビュアリクエストがあった時刻をUNIXTIMEに変換
+        event_time=$(ruby -rtime -e 'puts Time.parse("${{ github.event.pull_request.updated_at }}").to_i')
+        echo "event-time=${event_time}" >> $GITHUB_OUTPUT
       id: get-reviewers
       shell: bash
 
@@ -74,12 +63,9 @@ runs:
               "text": "${{ steps.get-reviewers.outputs.reviewers }}\n${{ inputs.message }}",
               "footer": "<${{ github.event.repository.html_url }}|${{ github.repository }}>",
               "footer_icon": "https://slack.github.com/static/img/favicon-neutral.png",
-              "ts": ${{ steps.get-reviewers.outputs.event_time }},
+              "ts": ${{ steps.get-reviewers.outputs.event-time }},
               "color": "${{ inputs.message-color }}"
             }]
           }
-      run: |
-        if "${{ steps.get-reviewers.outputs.is_send }}"; then
-          echo ${MESSAGE} | curl -X POST ${{ inputs.slack-webhook-url }} -d @-
-        fi
+      run: echo ${MESSAGE} | curl -X POST ${{ inputs.slack-webhook-url }} -d @-
       shell: bash

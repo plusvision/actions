@@ -19,12 +19,16 @@ name: github-reviewers
 on:
   pull_request: { types: [review_requested] }
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   github-reviewers:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: plusvision/actions/github-reviewers@v2
+      - uses: plusvision/actions/github-reviewers@v3
         with:
           slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
 ```
