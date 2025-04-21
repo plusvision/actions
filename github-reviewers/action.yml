@@ -44,8 +44,21 @@ runs:
           }
       run: |
         # レビュアにアサインされたユーザを取得
-        reviewers=($(gh api graphql -f query="${REQUEST_BODY}" | jq -r '.data.node.timelineItems.nodes[].requestedReviewer.login' | awk '{print "@"$0}'))
-        echo "reviewers=${reviewers[@]}" >> $GITHUB_OUTPUT
+        set -e
+
+        response=$(gh api graphql -f query="${REQUEST_BODY}")
+
+        if echo "$response" | jq -e '.data.node.timelineItems.nodes[].requestedReviewer.login | select(.==null)' >/dev/null; then
+          echo "::error :: requestedReviewer.login is null (Bot / Team などが含まれています)"
+          exit 1
+        fi
+
+        reviewers=($(
+          echo "$response" |
+          jq -r '.data.node.timelineItems.nodes[].requestedReviewer.login' |
+          awk '{print "@"$0}'
+        ))
+        echo "reviewers=${reviewers[@]}" >> "$GITHUB_OUTPUT"
 
         # レビュアリクエストがあった時刻をUNIXTIMEに変換
         event_time=$(ruby -rtime -e 'puts Time.parse("${{ github.event.pull_request.updated_at }}").to_i')
