@@ -45,6 +45,13 @@ runs:
       run: |
         # レビュアにアサインされたユーザを取得
         reviewers=($(gh api graphql -f query="${REQUEST_BODY}" | jq -r '.data.node.timelineItems.nodes[].requestedReviewer.login' | awk '{print "@"$0}'))
+
+        # reviewersから@nullを除外
+        for i in "${!reviewers[@]}"; do
+          if [[ "${reviewers[i]}" == "@null" ]]; then
+            unset reviewers[${i}]
+          fi
+        done
         echo "reviewers=${reviewers[@]}" >> $GITHUB_OUTPUT
 
         # レビュアリクエストがあった時刻をUNIXTIMEに変換
@@ -67,5 +74,10 @@ runs:
               "color": "${{ inputs.message-color }}"
             }]
           }
-      run: echo ${MESSAGE} | curl -X POST ${{ inputs.slack-webhook-url }} -d @-
+      run: |
+        if [[ -z "${{ steps.get-reviewers.outputs.reviewers }}" ]]; then
+          echo "No reviewers assigned, skipping message."
+          exit 0
+        fi
+        echo ${MESSAGE} | curl -X POST ${{ inputs.slack-webhook-url }} -d @-
       shell: bash
